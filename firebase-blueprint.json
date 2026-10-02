@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "Game": {
+      "title": "Game",
+      "description": "Veloc archived game entry",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Game display title"
+        },
+        "genre": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Game category genre"
+        },
+        "type": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Game runtime format (html, ruffle, emulatorjs, url)"
+        },
+        "codeOrUrl": {
+          "type": "string",
+          "maxLength": 1048576,
+          "description": "Game HTML code or source URL (empty if chunked)"
+        },
+        "coverUrl": {
+          "type": "string",
+          "maxLength": 500000,
+          "description": "Cover art image URL or SVG data URI"
+        },
+        "originalFileName": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Original uploaded filename reference"
+        },
+        "plays": {
+          "type": "number",
+          "description": "Total play count"
+        },
+        "isFavorite": {
+          "type": "boolean",
+          "description": "Favorite status"
+        },
+        "addedAt": {
+          "type": "number",
+          "description": "Timestamp in milliseconds"
+        },
+        "seriesId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Series identifier"
+        },
+        "seriesName": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Series display name"
+        },
+        "isChunked": {
+          "type": "boolean",
+          "description": "Whether codeOrUrl is split across subcollection chunks"
+        },
+        "totalChunks": {
+          "type": "number",
+          "description": "Number of chunks in subcollection"
+        }
+      },
+      "required": ["title", "genre", "type", "addedAt"]
+    },
+    "GameChunk": {
+      "title": "GameChunk",
+      "description": "Large game code fragment chunk",
+      "type": "object",
+      "properties": {
+        "chunkIndex": {
+          "type": "number",
+          "description": "Index of this chunk"
+        },
+        "data": {
+          "type": "string",
+          "maxLength": 700000,
+          "description": "Chunk string payload"
+        }
+      },
+      "required": ["chunkIndex", "data"]
+    },
+    "Series": {
+      "title": "Series",
+      "description": "Game series entry",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Series name"
+        },
+        "gameIds": {
+          "type": "array",
+          "description": "IDs of games in series"
+        },
+        "coverUrl": {
+          "type": "string",
+          "maxLength": 500000,
+          "description": "Series collage cover URL"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["name", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/games/{gameId}": {
+      "schema": "Game",
+      "description": "Collection of unblocked games stored in Veloc"
+    },
+    "/games/{gameId}/chunks/{chunkId}": {
+      "schema": "GameChunk",
+      "description": "Subcollection storing chunks for games exceeding Firestore document size"
+    },
+    "/series/{seriesId}": {
+      "schema": "Series",
+      "description": "Collection of series archives"
+    }
+  }
+}

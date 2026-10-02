@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidGame(data) {
+      return data.title is string && data.title.size() <= 128 &&
+             data.genre is string && data.genre.size() <= 64 &&
+             data.type is string && data.type.size() <= 32 &&
+             data.codeOrUrl is string && data.codeOrUrl.size() <= 1048576 &&
+             data.addedAt is number;
+    }
+
+    function isValidGameUpdate(data) {
+      return (!('title' in data) || (data.title is string && data.title.size() <= 128)) &&
+             (!('genre' in data) || (data.genre is string && data.genre.size() <= 64)) &&
+             (!('type' in data) || (data.type is string && data.type.size() <= 32)) &&
+             (!('codeOrUrl' in data) || (data.codeOrUrl is string && data.codeOrUrl.size() <= 1048576)) &&
+             (!('plays' in data) || (data.plays is number)) &&
+             (!('isFavorite' in data) || (data.isFavorite is bool));
+    }
+
+    match /games/{gameId} {
+      allow read: if true;
+      allow create: if isValidId(gameId) && isValidGame(request.resource.data);
+      allow update: if isValidId(gameId) && (isValidGame(request.resource.data) || isValidGameUpdate(request.resource.data));
+      allow delete: if isValidId(gameId);
+
+      match /chunks/{chunkId} {
+        allow read: if true;
+        allow create, update: if isValidId(chunkId) &&
+          request.resource.data.data is string &&
+          request.resource.data.data.size() <= 700000 &&
+          request.resource.data.chunkIndex is number;
+        allow delete: if isValidId(chunkId);
+      }
+    }
+
+    match /series/{seriesId} {
+      allow read: if true;
+      allow create, update: if isValidId(seriesId);
+      allow delete: if isValidId(seriesId);
+    }
+  }
+}
